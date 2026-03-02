@@ -1,0 +1,340 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        -48
+      ],
+      "id": "90d55951-0804-4582-8e18-59580acb914a",
+      "name": "Telegram Trigger",
+      "webhookId": "f351bc0a-5cd9-4de0-bd73-fc27456e017d",
+      "credentials": {
+        "telegramApi": {
+          "id": "Rweg5TBPJXk2bmVO",
+          "name": "khader_hash"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=أنت الآن 'خضور الفزّاع'، بوت ذكي ومرح. مهمتك تصنيف رسائل الزبائن:\n\nإذا اشتكى من السعر (مثلاً: السعر نار، غالي كثير) -> صنفها Pricing.\n\nإذا سأل سؤال عادي -> صنفها Support.\n\nإذا عم يمزح أو يشكرك -> صنفها Welcome.\nقاعدة صارمة: رد فقط بكلمة التصنيف (Pricing, Support, Welcome) بدون أي حرف زيادة.\nرد فقط باحد كلمات التصنيف لا تجاوب اكثر\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -112,
+        -48
+      ],
+      "id": "6f916064-01ef-46a9-9fc1-2ceff768baf4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "Pricing",
+                    "rightValue": "={{ $json.output }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "11bb22c0-928f-4151-ad8d-e70cd447748b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ec21f17a-a482-4ce5-b993-dcc4c0aba3fa",
+                    "leftValue": "Support",
+                    "rightValue": "={{ $json.output }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5905c113-4cde-4089-9713-6e096d6c9eb5",
+                    "leftValue": "Complaint",
+                    "rightValue": "={{ $json.output }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        240,
+        -48
+      ],
+      "id": "e1b6cf59-78a8-48c5-86a7-da26fcbff8d7",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        144
+      ],
+      "id": "7b639dbf-fee3-42dd-8c27-340b79ca8d7a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RgrHhYmQVUX0rmYr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": "0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        144
+      ],
+      "id": "fc979d31-c45e-41d3-aac2-ba9fba1323b6",
+      "name": "sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "l7cuyfdHNTksVMvq",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "تم ونعتذر",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        128
+      ],
+      "id": "28774a44-ec39-4b36-8b69-c6faf6d715d8",
+      "name": "Telegram Support Notification",
+      "webhookId": "ce1495c1-6880-41c0-8d24-324d37dd030d",
+      "credentials": {
+        "telegramApi": {
+          "id": "Rweg5TBPJXk2bmVO",
+          "name": "khader_hash"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "تكرم",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        -16
+      ],
+      "id": "4e394366-126f-4aa5-bca1-1fdea066f1f2",
+      "name": "Send Pricing Info",
+      "webhookId": "d2c33f09-fc7a-48a0-92d1-4bbaf41976d9",
+      "credentials": {
+        "telegramApi": {
+          "id": "Rweg5TBPJXk2bmVO",
+          "name": "khader_hash"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAnimation",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "file": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXI0c2FrZG12YTd5c3Z2ZXNjcGZpeXIwMzFuOW9xMTJybWx3cmg3bCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ZRzVLn5bAlM7XqcEcH/giphy.gif",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        -160
+      ],
+      "id": "39e27d7f-22db-4697-bee8-56a34345bb1f",
+      "name": "Send Animated Welcome",
+      "webhookId": "e75d2e82-bd56-4db2-b7b6-eb41f1ed3493",
+      "credentials": {
+        "telegramApi": {
+          "id": "Rweg5TBPJXk2bmVO",
+          "name": "khader_hash"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send Animated Welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Pricing Info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sheet": {
+      "main": [
+        [
+          {
+            "node": "Telegram Support Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Animated Welcome": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c0f22045-b63c-440a-bb27-29cbfb967cb0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0ef373ee7c96edc7a3e0551c33cfd0afc4a2ac1ba54405a75fb67a487bec9bfa"
+  },
+  "id": "fPjIXArrMpREGNW5",
+  "tags": []
+}
